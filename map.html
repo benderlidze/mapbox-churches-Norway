@@ -154,16 +154,15 @@
 
     <div id="map"></div>
     <div id="title"> </div>
+    <div id="logo">
+        <img src="/img/Conveyor_white_300px.png" alt="">
+    </div>
 
 
 
     <script>
 
-        // d3.csv("https://docs.google.com/spreadsheets/d/1yqVht8rlpZpgwlqUMODZEJ8KQMfZA5Pj13MtgsZZ4FE/gviz/tq?tqx=out:csv&sheet=SDG-NBF-COPY")
-        d3.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vTJiTcZU-_ivew24ddK1ryeDFiva046qTr28Cy11zL6x6663rKOznicZ3f2HkWYc2ncr_SoyFQLI4QT/pub?output=csv&sheet=Live in map")
-            .then(data => {
-                showPins(data);
-            })
+        const mainData = [];
 
         mapboxgl.accessToken = 'pk.eyJ1IjoiZXNtYXAiLCJhIjoiY2pwYmZkM2ExMDM3eDNrbzk3dWJ0ZmFjbyJ9.Dy8uEjj0Y-1HLE6fEZsKdA';
         var map = new mapboxgl.Map({
@@ -217,6 +216,11 @@
             });
 
 
+            // d3.csv("https://docs.google.com/spreadsheets/d/1yqVht8rlpZpgwlqUMODZEJ8KQMfZA5Pj13MtgsZZ4FE/gviz/tq?tqx=out:csv&sheet=SDG-NBF-COPY")
+            d3.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vTJiTcZU-_ivew24ddK1ryeDFiva046qTr28Cy11zL6x6663rKOznicZ3f2HkWYc2ncr_SoyFQLI4QT/pub?output=csv&sheet=Live in map")
+                .then(data => {
+                    showPins(data);
+                })
         })
 
         function mouseEnter() {
@@ -227,9 +231,9 @@
         }
 
         function showPins(data) {
-            console.log('data', data);
+
             collection = data.map(d => {
-                // mainData.push(d)
+                mainData.push(d)
                 return {
                     "type": "Feature",
                     "geometry": { "type": "Point", "coordinates": [+d['lon'], +d['lat']] },
