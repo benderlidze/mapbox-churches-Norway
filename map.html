@@ -286,8 +286,6 @@
                     .addTo(map);
             });
 
-
-            // d3.csv("https://docs.google.com/spreadsheets/d/1yqVht8rlpZpgwlqUMODZEJ8KQMfZA5Pj13MtgsZZ4FE/gviz/tq?tqx=out:csv&sheet=SDG-NBF-COPY")
             d3.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vTJiTcZU-_ivew24ddK1ryeDFiva046qTr28Cy11zL6x6663rKOznicZ3f2HkWYc2ncr_SoyFQLI4QT/pub?output=csv&sheet=Live in map")
                 .then(data => {
                     showPins(data);
@@ -376,7 +374,7 @@
                             }
 
                         });
-                        if (counter > 20) return;
+                        if (counter > 20) return; // display forst 20 results
                         a.appendChild(b);
                         counter++;
                     }
