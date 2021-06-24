@@ -213,7 +213,7 @@
 
     <div id="map"></div>
     <div class="autocomplete" style="width:300px;">
-        <input id="myInput" type="text" name="myCountry" placeholder="Enter 3 letters...">
+        <input id="myInput" type="text" name="myCountry" placeholder="Søk...">
     </div>
     <div id="logo">
         <img src="img/Conveyor_white_300px.png" alt="">
@@ -244,6 +244,22 @@
             });
 
             map.addLayer({
+                'id': 'labels',
+                'type': 'symbol',
+                'source': 'pins',
+                'layout': {
+                    'text-field': ['get', 'bygningsnavn'],
+                    'text-variable-anchor': ['bottom'],
+                    'text-radial-offset': 0.5,
+                    'text-justify': 'auto',
+                },
+                "filter": ["==", ['get', 'bygningsnavn'], "NULL"] //hide all labels on init 
+            });
+
+        
+
+
+            map.addLayer({
                 'id': 'pins',
                 'type': 'circle',
                 'source': 'pins',
@@ -271,7 +287,7 @@
                     ${img}
                     <div>3D-model: <a href="${data['model url']}">${name}</a></div>
                     <div>Vernestatus:      ${data['vernestatus']}</div>
-                    <div>Kirkesokno: ${data['nettside']}</div>
+                    <div>Kirkesøk: ${data['nettside']}</div>
                 `;
                 // Ensure that if the map is zoomed out such that multiple
                 // copies of the feature are visible, the popup appears
@@ -371,6 +387,15 @@
                                     center: [+point.lon, +point.lat],
                                     zoom: 14
                                 })
+
+                                map.setFilter('labels', [
+                                    'match',
+                                    ['get', 'bygningsnavn'],
+                                    inp.value,
+                                    true,
+                                    false
+                                ])
+
                             }
 
                         });
