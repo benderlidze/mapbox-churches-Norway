@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bærekraftsmåla i norske bibliotek</title>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.0.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.0.0/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://unpkg.com/shpjs@latest/dist/shp.js"></script>
+    <script src="https://goessner.net/download/prj/jsonxml/xml2json.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Helvetica Neue, Arial, Helvetica, sans-serif;
+        }
+
+        h3 {
+            padding: 0;
+            margin: 0;
+            color: #2f2f2f;
+            display: block;
+            font-weight: bold;
+            font: 20px Helvetica Neue, Arial, Helvetica, sans-serif;
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 140px;
+            left: 140px;
+            background: rgba(255, 255, 255, 0.8);
+            font-family: Arial, sans-serif;
+            overflow-y: overlay;
+            box-shadow: 0 0px 0px rgba(0, 0, 0, 0.5);
+            height: 550px;
+            width: 350px;
+            display: none;
+        }
+
+        #title {
+            position: absolute;
+            top: 5px;
+            left: 10px;
+            color: #2f2f2f;
+
+        }
+
+        #legend {
+            position: absolute;
+            top: 45px;
+            left: 10px;
+        }
+
+        #menuIcon {
+            position: absolute;
+            top: 45px;
+            left: 10px;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: auto auto;
+        }
+
+        .grid-item {
+            /* background-color: rgba(255, 255, 255, 0.8); */
+            border: 0px solid rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            font-size: 30px;
+            text-align: center;
+        }
+
+        button:focus {
+            outline: none;
+        }
+
+        .imgbtn {
+            padding: 0px;
+            margin: 1px;
+            width: 100px;
+            height: 100px;
+            background-position: center;
+            /* Center the image */
+            background-repeat: no-repeat;
+            /* Do not repeat the image */
+            background-size: cover;
+            cursor: pointer;
+            filter: grayscale(100%);
+            background-color: transparent;
+        }
+
+
+        .selected {
+
+            filter: grayscale(0%)
+        }
+
+        #logo {
+            position: absolute;
+            z-index: 1000;
+            bottom: 0px;
+            right: 0px;
+            padding: 20px;
+        }
+
+        #logo img {
+            width: 300px;
+        }
+
+        .mapboxgl-popup-content {
+            max-height: 600px !important;
+            overflow-y: auto;
+            width: 400px;
+        }
+
+        @media screen and (max-width: 992px) {
+            .imgbtn {
+                width: 73px;
+                height: 73px;
+            }
+
+            #legend {
+                position: absolute;
+                top: 45px;
+                left: 10px;
+            }
+
+            .mapboxgl-popup-content {
+                max-height: 600px !important;
+                overflow-y: auto;
+                width: 300px !important;
+            }
+
+            .mapboxgl-popup {
+                z-index: 1000
+            }
+
+            #logo img {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="map"></div>
+    <div id="title"> </div>
+
+
+
+    <script>
+
+        // d3.csv("https://docs.google.com/spreadsheets/d/1yqVht8rlpZpgwlqUMODZEJ8KQMfZA5Pj13MtgsZZ4FE/gviz/tq?tqx=out:csv&sheet=SDG-NBF-COPY")
+        d3.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vROli3GhizL9GGeDXaCg80W7I59EIy2_ct8gq10yU5_1U1T6KAj6EMXsOb3_WP8oOO0h1ymfQJ0mdV8/pub?output=csv")
+            .then(data => {
+                showPins(data);
+            })
+
+        mapboxgl.accessToken = 'pk.eyJ1IjoiZXNtYXAiLCJhIjoiY2pwYmZkM2ExMDM3eDNrbzk3dWJ0ZmFjbyJ9.Dy8uEjj0Y-1HLE6fEZsKdA';
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/light-v9',
+            center: {lng: 18.340026461581175, lat: 65.80234783332887},
+            zoom: 4.4
+        });
+
+        map.on('load', () => {
+
+            map.addSource('pins', {
+                'type': 'geojson',
+                'data': {
+                    type: "FeatureCollection",
+                    features: []
+                }
+            });
+
+            map.addLayer({
+                'id': 'pins',
+                'type': 'circle',
+                'source': 'pins',
+                'paint': {
+                    'circle-radius': 5,
+                    'circle-color': 'red',
+                    'circle-opacity': 1
+                }
+            });
+
+            map.on('mouseenter', 'pins', mouseEnter);
+            map.on('mouseleave', 'pins', mouseLeave);
+
+            map.on('click', 'pins', function (e) {
+                var coordinates = e.features[0].geometry.coordinates.slice();
+                var data = e.features[0].properties;
+                const description = `
+                    <h1>${data['bygningsnavn']}</h1>
+                `;
+                // Ensure that if the map is zoomed out such that multiple
+                // copies of the feature are visible, the popup appears
+                // over the copy being pointed to.
+                while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                }
+
+                new mapboxgl.Popup()
+                    .setLngLat(coordinates)
+                    .setHTML(description)
+                    .addTo(map);
+            });
+
+
+        })
+
+        function mouseEnter() {
+            map.getCanvas().style.cursor = 'pointer';
+        }
+        function mouseLeave() {
+            map.getCanvas().style.cursor = '';
+        }
+
+        function showPins(data) {
+            console.log('data', data);
+            collection = data.map(d => {
+                // mainData.push(d)
+                return {
+                    "type": "Feature",
+                    "geometry": { "type": "Point", "coordinates": [+d['lon'], +d['lat']] },
+                    "properties": {
+                        ...d
+                    },
+                }
+            })
+            console.log('collection', collection);
+            map.getSource('pins').setData({ type: "FeatureCollection", features: collection })
+        }
+
+
+
+
+
+    </script>
+
+</body>
+
+</html>
