@@ -8,8 +8,6 @@
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.0.0/mapbox-gl.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.0.0/mapbox-gl.css" rel="stylesheet" />
     <script src="https://d3js.org/d3.v5.min.js"></script>
-    <script src="https://unpkg.com/shpjs@latest/dist/shp.js"></script>
-    <script src="https://goessner.net/download/prj/jsonxml/xml2json.js"></script>
 
     <style>
         body {
@@ -162,7 +160,7 @@
     <script>
 
         // d3.csv("https://docs.google.com/spreadsheets/d/1yqVht8rlpZpgwlqUMODZEJ8KQMfZA5Pj13MtgsZZ4FE/gviz/tq?tqx=out:csv&sheet=SDG-NBF-COPY")
-        d3.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vROli3GhizL9GGeDXaCg80W7I59EIy2_ct8gq10yU5_1U1T6KAj6EMXsOb3_WP8oOO0h1ymfQJ0mdV8/pub?output=csv")
+        d3.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vTJiTcZU-_ivew24ddK1ryeDFiva046qTr28Cy11zL6x6663rKOznicZ3f2HkWYc2ncr_SoyFQLI4QT/pub?output=csv&sheet=Live in map")
             .then(data => {
                 showPins(data);
             })
@@ -171,7 +169,7 @@
         var map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/light-v9',
-            center: {lng: 18.340026461581175, lat: 65.80234783332887},
+            center: { lng: 18.340026461581175, lat: 65.80234783332887 },
             zoom: 4.4
         });
 
