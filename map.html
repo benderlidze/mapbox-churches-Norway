@@ -115,11 +115,11 @@
             width: 300px;
         }
 
-        .mapboxgl-popup-content {
+        /* .mapboxgl-popup-content {
             max-height: 600px !important;
             overflow-y: auto;
             width: 400px;
-        }
+        } */
 
         @media screen and (max-width: 992px) {
             .imgbtn {
@@ -256,7 +256,7 @@
                 "filter": ["==", ['get', 'bygningsnavn'], "NULL"] //hide all labels on init 
             });
 
-        
+
 
 
             map.addLayer({
@@ -285,9 +285,9 @@
                 const description = `
                     <h1>${name}</h1>
                     ${img}
-                    <div>3D-model: <a href="${data['model url']}">${name}</a></div>
-                    <div>Vernestatus:      ${data['vernestatus']}</div>
-                    <div>Kirkesøk: ${data['nettside']}</div>
+                    <div><b>Se i 3D</b>: <a href="${data['model url']}">${name}</a></div>
+                    <div><b>Vernestatus</b>:      ${data['vernestatus']}</div>
+                    <div><b>Kirkesøk</b>: <a href="${data['nettside']}">${name}</a></div>
                 `;
                 // Ensure that if the map is zoomed out such that multiple
                 // copies of the feature are visible, the popup appears
