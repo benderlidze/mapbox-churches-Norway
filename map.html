@@ -206,11 +206,65 @@
             background-color: DodgerBlue !important;
             color: #ffffff;
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+        #menu {
+            background: #fff;
+            position: absolute;
+            z-index: 1;
+            top: 10px;
+            right: 10px;
+            border-radius: 3px;
+            width: 120px;
+            border: 1px solid rgba(0, 0, 0, 0.4);
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        #menu a {
+            font-size: 13px;
+            color: #404040;
+            display: block;
+            margin: 0;
+            padding: 0;
+            padding: 10px;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+            text-align: center;
+        }
+
+        #menu a:last-child {
+            border: none;
+        }
+
+        #menu a:hover {
+            background-color: #f8f8f8;
+            color: #404040;
+        }
+
+        #menu a.active {
+            background-color: #3887be;
+            color: #ffffff;
+        }
+
+        #menu a.active:hover {
+            background: #3074a4;
+        }
     </style>
 </head>
 
 <body>
-
+    <nav id="menu"></nav>
     <div id="map"></div>
     <div class="autocomplete" style="width:300px;">
         <input id="myInput" type="text" name="myCountry" placeholder="Søk...">
@@ -235,6 +289,47 @@
 
         map.on('load', () => {
 
+
+
+
+            map.addSource('big', {
+                type: 'geojson',
+                data: 'data/1.json'
+            });
+            map.addLayer({
+                'id': 'Kommuner',
+                'type': 'fill',
+                'source': 'big', // reference the data source
+                'layout': {
+                    // Make the layer visible by default.
+                    'visibility': 'visible'
+                },
+                'paint': {
+                    'fill-color': '#0080ff', // blue color fill
+                    'fill-opacity': 0.2
+                }
+            });
+
+            map.addSource('small', {
+                type: 'geojson',
+                data: 'data/2.json'
+            });
+            map.addLayer({
+                'id': 'Fylker',
+                'type': 'fill',
+                'source': 'small', // reference the data source
+                'layout': {
+                    // Make the layer visible by default.
+                    'visibility': 'visible'
+                },
+                'paint': {
+                    'fill-color': 'red', // blue color fill
+                    'fill-opacity': 0.2
+                }
+            });
+
+
+
             map.addSource('pins', {
                 'type': 'geojson',
                 'data': {
@@ -256,8 +351,17 @@
                 "filter": ["==", ['get', 'bygningsnavn'], "NULL"] //hide all labels on init 
             });
 
-
-
+            map.addLayer({
+                'id': 'selected',
+                'type': 'circle',
+                'source': 'pins',
+                'paint': {
+                    'circle-radius': 8,
+                    'circle-color': 'blue',
+                    'circle-opacity': 1
+                },
+                "filter": ["==", ['get', 'bygningsnavn'], "NULL"] //hide all labels on init 
+            });
 
             map.addLayer({
                 'id': 'pins',
@@ -269,6 +373,8 @@
                     'circle-opacity': 1
                 }
             });
+
+
 
             map.on('mouseenter', 'pins', mouseEnter);
             map.on('mouseleave', 'pins', mouseLeave);
@@ -307,6 +413,61 @@
                     showPins(data);
                 })
         })
+
+
+
+        // After the last frame rendered before the map enters an "idle" state.
+        map.on('idle', function () {
+            // If these two layers have been added to the style,
+            // add the toggle buttons.
+            if (map.getLayer('Kommuner') && map.getLayer('Fylker')) {
+                // Enumerate ids of the layers.
+                var toggleableLayerIds = ['Kommuner', 'Fylker'];
+                // Set up the corresponding toggle button for each layer.
+                for (var i = 0; i < toggleableLayerIds.length; i++) {
+                    var id = toggleableLayerIds[i];
+                    if (!document.getElementById(id)) {
+                        // Create a link.
+                        var link = document.createElement('a');
+                        link.id = id;
+                        link.href = '#';
+                        link.textContent = id;
+                        link.className = 'active';
+                        // Show or hide layer when the toggle is clicked.
+                        link.onclick = function (e) {
+                            var clickedLayer = this.textContent;
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            var visibility = map.getLayoutProperty(
+                                clickedLayer,
+                                'visibility'
+                            );
+
+                            // Toggle layer visibility by changing the layout object's visibility property.
+                            if (visibility === 'visible') {
+                                map.setLayoutProperty(
+                                    clickedLayer,
+                                    'visibility',
+                                    'none'
+                                );
+                                this.className = '';
+                            } else {
+                                this.className = 'active';
+                                map.setLayoutProperty(
+                                    clickedLayer,
+                                    'visibility',
+                                    'visible'
+                                );
+                            }
+                        };
+
+                        var layers = document.getElementById('menu');
+                        layers.appendChild(link);
+                    }
+                }
+            }
+        });
 
         function mouseEnter() {
             map.getCanvas().style.cursor = 'pointer';
@@ -395,7 +556,30 @@
                                     true,
                                     false
                                 ])
+                                map.setFilter('selected', [
+                                    'match',
+                                    ['get', 'bygningsnavn'],
+                                    inp.value,
+                                    true,
+                                    false
+                                ])
 
+                                map.once("idle", () => {
+                                    console.log('done');
+                                    var mapBounds = map.getBounds()
+                                    const query = map.queryRenderedFeatures([map.project(mapBounds.getSouthWest()), map.project(mapBounds.getNorthEast())], { layers: ['pins'] });
+
+                                    const names = [...new Set(query.map(i => i.properties.bygningsnavn))]
+
+                                    console.log('names', names);
+                                    map.setFilter('labels', [
+                                        'match',
+                                        ['get', 'bygningsnavn'],
+                                        names,
+                                        true,
+                                        false
+                                    ])
+                                })
                             }
 
                         });
