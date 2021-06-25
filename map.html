@@ -278,6 +278,7 @@
     <script>
 
         const mainData = [];
+        const colors = ["#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"];
 
         mapboxgl.accessToken = 'pk.eyJ1IjoiZXNtYXAiLCJhIjoiY2pwYmZkM2ExMDM3eDNrbzk3dWJ0ZmFjbyJ9.Dy8uEjj0Y-1HLE6fEZsKdA';
         var map = new mapboxgl.Map({
@@ -293,8 +294,11 @@
 
 
             map.addSource('big', {
-                type: 'geojson',
-                data: 'data/1.json'
+                'type': 'geojson',
+                'data': {
+                    type: "FeatureCollection",
+                    features: []
+                }
             });
             map.addLayer({
                 'id': 'Kommuner',
@@ -305,14 +309,17 @@
                     'visibility': 'visible'
                 },
                 'paint': {
-                    'fill-color': '#0080ff', // blue color fill
-                    'fill-opacity': 0.2
+                    'fill-color': ['get', 'color'],
+                    'fill-opacity': 0.3
                 }
             });
 
             map.addSource('small', {
                 type: 'geojson',
-                data: 'data/2.json'
+                'data': {
+                    type: "FeatureCollection",
+                    features: []
+                }
             });
             map.addLayer({
                 'id': 'Fylker',
@@ -323,11 +330,25 @@
                     'visibility': 'visible'
                 },
                 'paint': {
-                    'fill-color': 'red', // blue color fill
-                    'fill-opacity': 0.2
+                    'fill-color': ['get', 'color'],
+                    'fill-opacity': 0.3
                 }
             });
 
+            fetch('data/1.json').then(i => i.json()).then(i => {
+                i.features.forEach(e => {
+                    e.properties.color = colors[Math.floor(Math.random() * colors.length)];
+                });
+                console.log('i', i);
+                map.getSource('big').setData(i)
+            })
+            fetch('data/2.json').then(i => i.json()).then(i => {
+                i.features.forEach(e => {
+                    e.properties.color = colors[Math.floor(Math.random() * colors.length)];
+                });
+                console.log('i', i);
+                map.getSource('small').setData(i)
+            })
 
 
             map.addSource('pins', {
